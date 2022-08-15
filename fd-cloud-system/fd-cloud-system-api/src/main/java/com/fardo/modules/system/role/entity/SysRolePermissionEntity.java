@@ -1,0 +1,58 @@
+package com.fardo.modules.system.role.entity;
+
+import java.io.Serializable;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
+
+/**
+ * <p>
+ * 角色权限表
+ * </p>
+ *
+ * @Author scott
+ * @since 2018-12-21
+ */
+@Data
+@EqualsAndHashCode(callSuper = false)
+@Accessors(chain = true)
+@TableName("t_sys_role_permission")
+public class SysRolePermissionEntity implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * id
+     */
+    @TableId(type = IdType.ID_WORKER_STR)
+    private String id;
+    
+    /**
+     * 角色id
+     */
+    private String roleId;
+
+    /**
+     * 权限id
+     */
+    private String permissionId;
+    
+    /**
+     * 数据权限
+     */
+    private String dataRuleIds;
+
+    public SysRolePermissionEntity() {
+   	}
+       
+   	public SysRolePermissionEntity(String roleId, String permissionId) {
+   		this.roleId = roleId;
+   		this.permissionId = permissionId;
+   	}
+
+}

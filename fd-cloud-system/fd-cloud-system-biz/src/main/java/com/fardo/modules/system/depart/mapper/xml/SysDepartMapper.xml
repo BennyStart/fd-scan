@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fardo.modules.system.depart.mapper.SysDepartMapper">
+    <!-- 分页查询机构数据 -->
+    <select id="getPageList" resultType="com.fardo.modules.system.depart.model.SysDepartModel">
+        select * from t_sys_depart t where t.del_flag = 0
+        <if test="sysDepartParamVo.path != null and sysDepartParamVo.path != ''">
+            and t.PATH like #{sysDepartParamVo.path}
+        </if>
+        <if test="sysDepartParamVo.orgCode != null and sysDepartParamVo.orgCode != ''">
+            and t.org_code like #{sysDepartParamVo.orgCode}
+        </if>
+        <if test="sysDepartParamVo.departName != null and sysDepartParamVo.departName != ''">
+            and t.depart_name like #{sysDepartParamVo.departName}
+        </if>
+        <if test="sysDepartParamVo.originalAreaCode != null and sysDepartParamVo.originalAreaCode != ''">
+            and t.ORIGINAL_AREA_CODE = #{sysDepartParamVo.originalAreaCode}
+        </if>
+    </select>
+
+	<select id="queryUserDeparts" parameterType="String" resultType="com.fardo.modules.system.depart.entity.SysDepartEntity">
+	   select * from t_sys_depart where id IN ( select dep_id from t_sys_user_depart_roles where user_id = #{userId} )
+	</select>
+
+    <!-- 根据username查询所拥有的部门 -->
+    <select id="queryDepartsByUsername" parameterType="String" resultType="com.fardo.modules.system.depart.entity.SysDepartEntity">
+        SELECT *
+        FROM t_sys_depart
+        WHERE id IN (
+            SELECT dep_id
+            FROM t_sys_user_depart
+            WHERE user_id = (
+                SELECT id
+                FROM sys_user
+                WHERE username = #{username}
+            )
+        )
+    </select>
+
+    <!-- 根据部门Id查询,当前和下级所有部门IDS -->
+    <select id="getSubDepIdsByDepId" resultType="java.lang.String">
+		select id from t_sys_depart where del_flag = '0' and org_code like concat((select org_code from t_sys_depart where id=#{departId}),'%')
+	</select>
+
+    <!--根据部门编码获取我的部门下所有部门ids -->
+    <select id="getSubDepIdsByOrgCodes" resultType="java.lang.String">
+		select id from t_sys_depart where del_flag = '0' and
+        <foreach collection="orgCodes" item="item" index="index"  open="(" separator="or" close=")">
+            org_code LIKE CONCAT(#{item},'%')
+        </foreach>
+	</select>
+
+    <!--根据角色id获取部门path字段信息 -->
+    <select id="getPahtByRoleIds" resultType="java.lang.String">
+        select path from t_sys_depart where del_flag = '0' and id in (select depart_id from t_sys_role_depart where role_id in
+        <foreach collection="roleIds" item="item" index="index"  open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        )
+    </select>
+    <select id="getSysDepartEntity" resultType="com.fardo.modules.system.depart.entity.SysDepartEntity">
+        select * from t_sys_depart
+        order by sys_code desc
+    </select>
+    <select id="getSysDepartEntityInfo" resultType="com.fardo.modules.system.depart.entity.SysDepartEntity">
+        select * from t_sys_depart
+        where sys_code = #{sysCode}
+    </select>
+
+    <select id="getBySysCode" resultType="com.fardo.modules.system.depart.entity.SysDepartEntity">
+        select * from T_SYS_DEPART where SYS_CODE = #{sysCode}
+    </select>
+</mapper>

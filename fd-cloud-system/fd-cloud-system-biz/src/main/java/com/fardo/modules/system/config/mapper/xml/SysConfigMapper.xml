@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fardo.modules.system.config.mapper.SysConfigMapper">
+
+
+	<select id="getSysConfigEntityPage" resultType="com.fardo.modules.system.config.entity.SysConfigEntity">
+		select t.* from t_sys_config t
+		<where>
+			1=1
+			<if test="code != null and code != ''">
+				AND t.code LIKE concat(concat('%',#{code}),'%')
+			</if>
+			<if test="name != null and name != ''">
+				AND t.name LIKE concat(concat('%',#{name}),'%')
+			</if>
+			<if test="remark != null and remark != ''">
+				AND t.remark LIKE concat(concat('%',#{remark}),'%')
+			</if>
+		</where>
+		order by t.CREATE_TIME
+		<if test="_databaseId=='oracle'">
+			desc nulls last
+		</if>
+	</select>
+</mapper>

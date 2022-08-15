@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fardo.modules.system.user.mapper.SysUnitUserMapper">
+
+	<!-- 根据用户名查询 -->
+	<select id="getUserByName" resultType="com.fardo.modules.system.user.entity.SysUserEntity">
+		select * from  t_sys_user  where username = #{username} and del_flag = 0
+	</select>
+
+	<!-- 根据部门Id查询 -->
+	<select id="getUserByDepId" resultType="com.fardo.modules.system.user.entity.SysUserEntity">
+		select * from sys_user where del_flag = 0 and id in (select user_id from sys_user_depart where dep_id=#{departId})
+		<if test="username!=null and username!=''">
+			and username = #{username}
+		</if>
+	</select>
+
+	<!-- 查询用户的所属部门名称信息 -->
+	<select id="getDepNamesByUserIds" resultType="com.fardo.modules.system.user.vo.SysUserDepVo">
+		select d.depart_name,ud.user_id from sys_user_depart ud,sys_depart d where d.id = ud.dep_id and ud.user_id in
+		<foreach collection="userIds" index="index" item="id" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</select>
+
+	<!-- 通过多个部门IDS，查询部门下的用户信息 -->
+	<select id="getUserByDepIds" resultType="com.fardo.modules.system.user.entity.SysUserEntity">
+		select * from sys_user where del_flag = 0
+		<if test="departIds!=null  and departIds.size()>0">
+			and id in (select user_id from sys_user_depart where dep_id in
+			<foreach collection="departIds" index="index" item="id" open="(" separator="," close=")">
+				#{id}
+			</foreach>
+			)
+		</if>
+		<if test="username!=null and username!=''">
+			and username = #{username}
+		</if>
+	</select>
+
+	<!-- 根据角色Id查询 -->
+	<select id="getUserByRoleId" resultType="com.fardo.modules.system.user.entity.SysUserEntity">
+		select * from sys_user where del_flag = 0 and id in (select user_id from sys_user_role where role_id=#{roleId})
+		<if test="username!=null and username!=''">
+			and username = #{username}
+		</if>
+	</select>
+
+	<!--  修改用户部门code -->
+	<update id="updateUserDepart">
+		UPDATE t_sys_user SET depart_id = #{departId} where username = #{username}
+	</update>
+
+	<!-- 根据手机号查询 -->
+	<select id="getUserByPhone"  resultType="com.fardo.modules.system.user.entity.SysUserEntity">
+		select * from  sys_user  where phone = #{phone} and del_flag = 0
+	</select>
+
+	<!-- 根据邮箱查询用户信息 -->
+	<select id="getUserByEmail" resultType="com.fardo.modules.system.user.entity.SysUserEntity">
+	select * from  sys_user  where email = #{email} and del_flag = 0
+	</select>
+
+	<!-- SQL片段：getUserByOrgCode 的 FROM 和 WHERE 部分 -->
+	<sql id="getUserByOrgCodeFromSql">
+		FROM
+		sys_depart
+		INNER JOIN sys_user_depart ON sys_user_depart.dep_id = sys_depart.id
+		INNER JOIN sys_user ON sys_user.id = sys_user_depart.user_id
+		WHERE
+		sys_user.del_flag = 0 AND sys_depart.org_code LIKE '${orgCode}%'
+
+		<if test="userParams != null">
+			<if test="userParams.realname != null and userParams.realname != ''">
+				AND sys_user.realname LIKE concat(concat('%',#{userParams.realname}),'%')
+			</if>
+			<if test="userParams.workNo != null and userParams.workNo != ''">
+				AND sys_user.work_no LIKE concat(concat('%',#{userParams.workNo}),'%')
+			</if>
+		</if>
+	</sql>
+
+	<!-- 根据 orgCode 查询用户，包括子部门下的用户 -->
+	<select id="getUserByOrgCode" resultType="com.fardo.modules.system.user.model.SysUserSysDepartModel">
+		SELECT
+			sys_user.id AS id,
+			sys_user.realname AS realname,
+			sys_user.work_no AS workNo,
+			sys_user.post AS post,
+			sys_user.telephone AS telephone,
+			sys_user.email AS email,
+			sys_user.phone AS phone,
+			sys_depart.id AS departId,
+			sys_depart.depart_name AS departName
+		<include refid="getUserByOrgCodeFromSql"/>
+		ORDER BY
+			sys_depart.org_code ASC
+	</select>
+
+	<!-- 查询 getUserByOrgCode 的总数-->
+	<select id="getUserByOrgCodeTotal" resultType="java.lang.Integer">
+		SELECT COUNT(1) <include refid="getUserByOrgCodeFromSql"/>
+	</select>
+
+	<!-- 批量删除角色的与用户关系-->
+	<update id="deleteBathRoleUserRelation">
+		delete from sys_user_role
+		where role_id in
+		<foreach item="id" collection="roleIdArray" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</update>
+	<!-- 批量删除角色的与权限关系-->
+	<update id="deleteBathRolePermissionRelation">
+		delete from sys_role_permission
+		where role_id in
+		<foreach item="id" collection="roleIdArray" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</update>
+
+	<!-- 查询被逻辑删除的用户 -->
+	<select id="selectLogicDeleted" resultType="com.fardo.modules.system.user.entity.SysUserEntity">
+		SELECT * FROM sys_user ${ew.customSqlSegment}
+	</select>
+
+	<!-- 更新被逻辑删除的用户 -->
+	<update id="revertLogicDeleted">
+		UPDATE
+			sys_user
+		SET
+			del_flag = 0,
+			update_by = #{entity.updateBy},
+			update_time = #{entity.updateTime}
+		WHERE
+			del_flag = 1
+			AND id IN (${userIds})
+	</update>
+
+	<!-- 彻底删除被逻辑删除的用户 -->
+	<delete id="deleteLogicDeleted">
+		DELETE FROM sys_user WHERE del_flag = 1 AND id IN (${userIds})
+	</delete>
+
+    <!-- 更新空字符串为null -->
+    <update id="updateNullByEmptyString">
+        UPDATE sys_user SET ${fieldName} = NULL WHERE ${fieldName} = ''
+    </update>
+
+	<!-- 通过多个部门IDS，查询部门下的用户信息 -->
+	<select id="queryByDepIds" resultType="com.fardo.modules.system.user.entity.SysUserEntity">
+		select * from sys_user where del_flag = 0
+		<if test="departIds!=null  and departIds.size()>0">
+			and id in (select user_id from sys_user_depart where dep_id in
+			<foreach collection="departIds" index="index" item="id" open="(" separator="," close=")">
+				#{id}
+			</foreach>
+			)
+		</if>
+		<if test="username!=null and username!=''">
+			and username != #{username}
+		</if>
+	</select>
+
+	<select id="getUserList" resultType="com.fardo.modules.system.user.model.SysUserModel">
+        select
+        	u.id as id,u.realname as realname,d.depart_name as departName,u.police_no as police_no,u.status as status
+        from t_sys_user u left join t_sys_depart d on u.depart_id = d.id
+        where u.id in
+			<foreach collection="idList" index="index" item="id" open="(" separator="," close=")">
+				#{id}
+			</foreach>
+
+	</select>
+
+	<select id="getUserSelect" resultType="com.fardo.modules.system.user.model.SysUserModel">
+  		select id , realname  from t_sys_user  where status='1'
+	</select>
+
+	<!-- 分页查询用户 -->
+	<select id="getPageList" resultType="com.fardo.modules.system.user.entity.SysUserEntity">
+		SELECT
+			u.*
+		FROM
+			t_sys_user u
+		INNER JOIN t_sys_depart d ON u.depart_id = d.id
+		WHERE
+			u.del_flag = 0
+			and u.type = '2'
+		<if test="sysUserParamVo.id!=null and sysUserParamVo.id!=''">
+			AND u.id = #{sysUserParamVo.id}
+		</if>
+		<if test="sysUserParamVo.departId!=null and sysUserParamVo.departId!=''">
+			AND u.depart_id = #{sysUserParamVo.departId}
+		</if>
+		<if test="sysUserParamVo.username!=null and sysUserParamVo.username!=''">
+			AND u.username LIKE #{sysUserParamVo.username}
+		</if>
+		<if test="sysUserParamVo.realname!=null and sysUserParamVo.realname!=''">
+			AND u.realname LIKE #{sysUserParamVo.realname}
+		</if>
+		<if test="sysUserParamVo.policeNo!=null and sysUserParamVo.policeNo!=''">
+			AND u.police_no LIKE #{sysUserParamVo.policeNo}
+		</if>
+		<if test="sysUserParamVo.idcard!=null and sysUserParamVo.idcard!=''">
+			AND u.idcard LIKE #{sysUserParamVo.idcard}
+		</if>
+		<if test="sysUserParamVo.departName!=null and sysUserParamVo.departName!=''">
+			AND d.DEPART_NAME LIKE #{sysUserParamVo.departName}
+		</if>
+		<if test="sysUserParamVo.roleId!=null and sysUserParamVo.roleId!=''">
+			AND u.id IN (
+			SELECT
+			user_id
+			FROM
+			t_sys_user_role
+			WHERE
+			role_id = #{sysUserParamVo.roleId}
+			)
+		</if>
+		<if test="sysUserParamVo.excludeRoleId!=null and sysUserParamVo.excludeRoleId!=''">
+			AND u.id NOT IN (
+			SELECT
+			user_id
+			FROM
+			t_sys_user_role
+			WHERE
+			role_id = #{sysUserParamVo.excludeRoleId}
+			)
+		</if>
+		order by u.create_time desc
+	</select>
+
+    <select id="queryUserForDepart" resultType="com.fardo.modules.system.user.model.SysUserModel">
+  		select u.id,
+               u.username,
+               u.realname,
+               u.police_no,
+               u.idcard,
+               d.id depart_id,
+               d.depart_name
+          from t_sys_user u
+          left join t_sys_user_depart ud
+            on u.id = ud.user_id
+          left join t_sys_depart d
+            on ud.dep_id = d.id
+         where d.id = #{departId}
+         and u.type = '2' and u.DEL_FLAG = 0
+        <if test="noUserId!=null and noUserId!=''">
+            AND u.id != #{noUserId}
+        </if>
+        <if test="vo.condition!=null and vo.condition!=''">
+            AND(
+            u.police_no like #{vo.condition}
+            or u.realname like #{vo.condition}
+            or u.realname_py like #{vo.condition}
+            or d.depart_name like #{vo.condition}
+            or d.depart_name_pinyin_abbr like #{vo.condition}
+            )
+        </if>
+	</select>
+
+</mapper>

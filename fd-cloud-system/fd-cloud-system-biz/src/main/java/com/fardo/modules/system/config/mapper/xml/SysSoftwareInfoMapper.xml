@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fardo.modules.system.config.mapper.SysSoftwareInfoMapper">
+
+    <!-- 分页查询软件下载列表页面-->
+    <select id="getPageList" resultType="com.fardo.modules.system.config.model.SysSoftwareInfoModel">
+        select t1.id,t1.software_name,t1.software_type,t1.software_version,
+        t1.version_change_explain,t1.release_date,t2.download_name,t2.download_url,t2.if_upgrade
+        <include refid="getPageListFromSql"/>
+       order by t1.release_date desc
+    </select>
+
+
+    <!-- 查询getPageList的总数-->
+    <select id="getPageListTotal" resultType="java.lang.Integer">
+        SELECT COUNT(1) <include refid="getPageListFromSql"/>
+    </select>
+
+    <!-- SQL片段：getPageList 的 FROM 和 WHERE 部分 -->
+    <sql id="getPageListFromSql">
+        from T_SYS_SOFTWARE_INFO t1 left join T_SYS_SOFTWARE_DOWNLOAD t2 on t1.id =t2.software_id
+        where 1=1
+        <if test="softVo.softwareName != null and softVo.softwareName != ''">
+            AND t1.software_name LIKE concat(concat('%',#{softVo.softwareName}),'%')
+        </if>
+    </sql>
+
+
+</mapper>

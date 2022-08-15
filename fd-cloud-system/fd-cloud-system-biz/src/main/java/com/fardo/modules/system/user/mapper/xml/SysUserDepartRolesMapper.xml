@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fardo.modules.system.user.mapper.SysUserDepartRolesMapper">
+	<!--删除用户部门角色关系-->
+	<delete id="deleteByUserId">
+		delete from T_SYS_USER_DEPART_ROLES where USER_ID = #{userId}
+	</delete>
+	<delete id="delete">
+		delete from T_SYS_USER_DEPART_ROLES where USER_ID =#{userId} and DEP_ID = #{departId} and ROLE_ID = #{roleId}
+	</delete>
+	<!--查询用户部门角色关系-->
+	<select id="selectByUserId" resultType="com.fardo.modules.system.user.vo.UserDepartRoleDetailVo">
+		select dr.*,d.DEPART_NAME,r.ROLE_NAME from T_SYS_USER_DEPART_ROLES dr inner join T_SYS_DEPART d on d.ID = dr.dep_id inner join
+		T_SYS_ROLE r on r.ID = dr.role_id where dr.USER_ID = #{userId}
+	</select>
+</mapper>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fardo.modules.system.role.mapper.SysRoleDepartMapper">
+
+
+    <select id="getDepartInfoByRoleId" resultType="com.fardo.modules.system.depart.vo.SysDepartVo">
+        select d.id, d.DEPART_NAME from t_sys_role_depart dr inner join T_SYS_DEPART d on dr.DEPART_ID=d.ID where dr.ROLE_ID = #{roleId}
+    </select>
+</mapper>

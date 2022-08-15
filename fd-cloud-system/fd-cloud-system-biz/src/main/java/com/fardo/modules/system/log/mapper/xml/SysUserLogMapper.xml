@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fardo.modules.system.log.mapper.SysUserLogMapper">
+
+    <select id="pageList" resultType="com.fardo.modules.system.log.model.LogGridModel">
+        select t.id,
+            t.create_time,
+            d.depart_name,
+            u.realname xm,
+            u.police_no,
+            t.oper_type,
+            t.oper_name,
+            ( CASE t.oper_result WHEN '0' THEN '成功' WHEN '1' THEN '失败' ELSE '失败' END ) oper_result,
+            t.request_ip,
+            t.oper_module
+            from t_sys_user_log t
+            left join t_sys_user u
+            on t.create_by = u.id
+            left join t_sys_depart d
+            on t.depart_id = d.id
+        where 1 = 1
+        <if test="vo.phone != null and vo.phone != ''">
+            and u.mobilephone like concat(concat('%', #{vo.phone}), '%')
+        </if>
+        <if test="vo.startTime != null and vo.startTime != ''">
+            and t.create_time &gt;= #{vo.startTime}
+        </if>
+        <if test="vo.endTime != null and vo.endTime != ''">
+            and t.create_time &lt;= #{vo.endTime}
+        </if>
+        <if test="vo.xm != null and vo.xm != ''">
+            and u.realname like concat(concat('%', #{vo.xm}), '%')
+        </if>
+        <if test="vo.idCard != null and vo.idCard != ''">
+            and u.idcard like concat(concat('%', #{vo.idCard}), '%')
+        </if>
+        <if test="vo.requestIp != null and vo.requestIp != ''">
+            and t.request_ip like concat(concat('%', #{vo.requestIp}), '%')
+        </if>
+        <if test="vo.departName != null and vo.departName != ''">
+            and d.depart_name like concat(concat('%', #{vo.departName}), '%')
+        </if>
+        <if test="vo.operType != null and vo.operType != ''">
+            and t.oper_type = #{vo.operType}
+        </if>
+        <if test="vo.operModule != null and vo.operModule != ''">
+            and t.oper_module = #{vo.operModule}
+        </if>
+        order by t.create_time desc
+    </select>
+
+    <select id="list" resultType="com.fardo.modules.system.log.entity.SysUserLogEntity">
+        select t.*
+        from t_sys_user_log t
+        left join t_sys_user u
+        on t.create_by = u.id
+        left join t_sys_depart d
+        on t.depart_id = d.id
+        where 1 = 1
+        <if test="vo.startTime != null and vo.startTime != ''">
+            and t.create_time &gt;= #{vo.startTime}
+        </if>
+        <if test="vo.endTime != null and vo.endTime != ''">
+            and t.create_time &lt;= #{vo.endTime}
+        </if>
+        <if test="vo.xm != null and vo.xm != ''">
+            and u.realname like concat(concat('%', #{vo.xm}), '%')
+        </if>
+        <if test="vo.idCard != null and vo.idCard != ''">
+            and u.idcard like concat(concat('%', #{vo.idCard}), '%')
+        </if>
+        <if test="vo.requestIp != null and vo.requestIp != ''">
+            and t.request_ip like concat(concat('%', #{vo.requestIp}), '%')
+        </if>
+        <if test="vo.departName != null and vo.departName != ''">
+            and d.depart_name like concat(concat('%', #{vo.departName}), '%')
+        </if>
+        <if test="vo.operType != null and vo.operType != ''">
+            and t.oper_type = #{vo.operType}
+        </if>
+        <if test="vo.operModule != null and vo.operModule != ''">
+            and t.oper_module = #{vo.operModule}
+        </if>
+        order by t.create_time desc
+    </select>
+
+</mapper>

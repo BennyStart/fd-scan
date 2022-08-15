@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fardo.modules.system.config.mapper.BlDmBllxConfigMapper">
+    <update id="editBh">
+        UPDATE T_BL_DM_LX_XWDXLX SET SFXS = #{sfxs} WHERE BLLX_BH = #{bh} AND XWDXLX_BH = #{typeBh}
+    </update>
+
+    <update id="updateById">
+        UPDATE t_bl_dm_bllx SET SFXS = #{sfxs} WHERE ID = #{bh}
+    </update>
+
+    <update id="updateByBlDmBldlxId">
+        UPDATE t_bl_dm_bldlx SET SFXS = #{sfxs} WHERE ID = #{bh}
+    </update>
+
+    <delete id="delete">
+		delete from T_BL_DM_BLLX_CONFIG
+	</delete>
+
+    <select id="getBlDetailVo" resultType="com.fardo.modules.znbl.bl.vo.BlDetailVo">
+        select t.id as bh,t.sfxs from t_bl_dm_bllx t where sfxs = '1'
+    </select>
+
+    <select id="getBlbh" resultType="com.fardo.modules.znbl.bl.vo.BllxChilderVo">
+        select bllx_bh as bh,xwdxlx_bh as typeBh,sfxs from T_BL_DM_LX_XWDXLX where bllx_bh = #{bh} and sfxs = '1'
+    </select>
+
+    <select id="selectList" resultType="com.fardo.modules.znbl.ywxt.entity.BlDmBldlxEntity">
+        select * from t_bl_dm_bldlx
+    </select>
+
+    <select id="getBlBllxEntityList" resultType="com.fardo.modules.znbl.ywxt.entity.BlDmBllxEntity">
+        select
+        t1.ID as id,
+        t1.MC as mc,
+        t3.ID as lxId,
+        t3.MC as lxMc,
+        t1.sfxs,
+        t2.sfxs as dxsfxs
+        from t_bl_dm_bllx t1
+        left join T_BL_DM_LX_XWDXLX t2 on t1.ID = t2.bllx_bh
+        left join t_bl_dm_xwdxlx t3 on t2.xwdxlx_bh = t3.ID
+        where dlx = #{dlx}
+    </select>
+    <select id="getBlDmBllxEntity" resultType="com.fardo.modules.znbl.ywxt.entity.BlDmBllxEntity">
+        select * from t_bl_dm_bllx where ID = #{bh}
+    </select>
+
+    <select id="getBlDmBldlxEntity" resultType="com.fardo.modules.znbl.ywxt.entity.BlDmBldlxEntity">
+        select * from t_bl_dm_bldlx where ID = #{bh}
+    </select>
+    <select id="getBlBllxBackUpEntityList" resultType="com.fardo.modules.znbl.ywxt.entity.BlDmBllxEntity">
+        select
+        t1.ID as id,
+        t1.MC as mc,
+        t1.sfxs
+        from t_bl_dm_bllx t1
+        where dlx = #{dlx}
+        order by xh
+    </select>
+    <select id="getBlBllxChildren" resultType="com.fardo.modules.znbl.ywxt.model.BlBllxChildrenModel">
+        select
+        CONCAT(t1.ID,CONCAT('-',t3.ID)) as id,
+        t3.MC as name,
+        t2.sfxs
+        from t_bl_dm_bllx t1
+        join T_BL_DM_LX_XWDXLX t2 on t1.ID = t2.bllx_bh
+        join t_bl_dm_xwdxlx t3 on t2.xwdxlx_bh = t3.ID
+        where t2.bllx_bh = #{bllxBh}
+    </select>
+</mapper>
